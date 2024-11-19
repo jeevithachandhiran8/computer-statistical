@@ -1,0 +1,83 @@
+# Import necessary libraries
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score
+import joblib
+
+# Sample data for the demonstration (simulated patient data)
+data = {
+    'age': [25, 45, 35, 50, 60, 30, 40, 70],
+    'symptom_severity': [2, 4, 3, 5, 1, 3, 2, 4],
+    'has_diabetes': [0, 1, 0, 1, 1, 0, 0, 1],  # 0 = No, 1 = Yes
+    'has_hypertension': [0, 1, 1, 1, 0, 0, 1, 1],  # 0 = No, 1 = Yes
+    'medicine_recommended': ['A', 'B', 'B', 'C', 'A', 'A', 'C', 'C']  # Medicine recommendation
+}
+
+# Step 1: Load the patient data (simulated here)
+df = pd.DataFrame(data)
+
+# Step 2: Preprocess the data (convert categorical to numerical if needed)
+# For simplicity, we'll use the data as is, assuming it's already preprocessed
+
+# Features and labels
+X = df.drop('medicine_recommended', axis=1)  # Features (all columns except target)
+y = df['medicine_recommended']  # Labels (medicine recommendation)
+
+# Step 3: Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Step 4: Train a model (Using Decision Tree classifier here)
+model = DecisionTreeClassifier(random_state=42)
+model.fit(X_train, y_train)
+
+# Step 5: Predict medicine for a new patient (example)
+def predict_medicine(age, symptom_severity, has_diabetes, has_hypertension):
+    new_patient = pd.DataFrame({
+        'age': [age],
+        'symptom_severity': [symptom_severity],
+        'has_diabetes': [has_diabetes],
+        'has_hypertension': [has_hypertension]
+    })
+
+    recommended_medicine = model.predict(new_patient)
+    return recommended_medicine[0]
+
+# Step 6: Function to evaluate the model accuracy (on the test data)
+def evaluate_model():
+    y_pred = model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f"Model Accuracy: {accuracy * 100:.2f}%")
+
+# Step 7: Save the model for future use
+def save_model():
+    joblib.dump(model, 'medicine_recommender_model.pkl')
+    print("Model saved successfully!")
+
+# Step 8: Load the model (for use in future predictions)
+def load_model():
+    model = joblib.load('medicine_recommender_model.pkl')
+    print("Model loaded successfully!")
+    return model
+
+# Main function to execute the system
+def main():
+    # Evaluate the model's accuracy
+    evaluate_model()
+
+    # Get personalized medicine recommendation
+    age = int(input("Enter patient's age: "))
+    symptom_severity = int(input("Enter patient's symptom severity (1-5): "))
+    has_diabetes = int(input("Does the patient have diabetes? (0 = No, 1 = Yes): "))
+    has_hypertension = int(input("Does the patient have hypertension? (0 = No, 1 = Yes): "))
+    
+    recommended_medicine = predict_medicine(age, symptom_severity, has_diabetes, has_hypertension)
+    print(f"\nRecommended Medicine: {recommended_medicine}")
+
+    # Option to save the trained model
+    save_model()
+
+# Run the program
+if __name__ == "__main__":
+    main()
